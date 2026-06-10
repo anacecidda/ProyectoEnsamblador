@@ -11,7 +11,7 @@
 #define PARED '#'
 #define CAMINOLIBRE '.'
 #define JUGADOR 'P'
-#define MONDEDA 'M'
+#define MONEDA 'M'
 #define LLAVE 'K'
 #define PUERTA 'D'
 #define SALIDA 'E'
@@ -22,29 +22,30 @@
 typedef struct {
      int fila;
      int col;
-} Pos;
-
-typedef struct {
-     bool vivo;          //1= vivo 0= eliminado
+     int vivo;          //1= vivo 0= eliminado
      int pausa;          //contador de pausa para el movimiento del enemigo
      int velocidad;      //cada cuantos movimientos se mueve (1= rapido, 2= medio, 3= lento)
 } Enemigo;
 
 typedef struct {
      char mapa[FILAS][COLUMNAS];
-     Pos jugador;
-     Pos enemigo;
+     int jugadorFila;
+     int jugadorCol;
      int monedasRec;
      int monedasTotal;
      int pasos;
      int nivelActual;
-     bool tieneLlave;
      Enemigo enemigos[MAXENEMIGOS];
      int numEnemigos;         //por nivel
-     bool jugadorVivo;        //1= vivo 0= muerto
+     int jugadorVivo;        //1= vivo 0= muerto
+     int tieneLlave;        //1= tiene llave 0= no tiene llave
 } Juego;
 
-//prototipos de nasm
+//prototipos de NASM
+extern long contar_caracter(char *mapa, int totalCeldas, char caracter);
+extern long validar_movimiento(char *mapa, int columnas, int fila, int col);
+extern long detectar_objeto(char *mapa, int columnas, int fila, int col, char caracter);
+extern long contar_celdas_libres(char *mapa, int totalCeldas);
 
 void inicializarJuego(Juego *juego, int num);
 
@@ -67,6 +68,8 @@ int nivelTerminado(Juego *juego);
 void mostrarResumen(Juego *juego);
 
 //bucle de un nivel
-void ejecutarJuego(Juego *juego, int num);
+int ejecutarJuego(Juego *juego, int num);
 
 #endif //JUEGO_H
+
+//el ifndef y e, endif son  para evitar que se incluya el mismo header varias veces
