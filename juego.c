@@ -11,11 +11,13 @@
 #define ANSI_COLOR_LIGHTBLUE "\033[94m"      //LLAVE
 #define ANSI_COLOR_CIAN "\033[36m"      //PUERTA
 #define ANSI_COLOR_BLUE "\033[34m"
+#define ANSI_RESET "\033[0m"
 //CAMINO LIBRE BLANCO
 
 void inicializarJuego(Juego *juego, int num);
 void limpiarPantalla();
 void mostrarMapa(Juego *juego);
+static int enemigoEnCelda(Juego *juego, int fila, int col);
 void mostrarInstrucciones(Juego *juego);
 char leerLetra();
 void moverJugador(Juego *juego, char tecla);
@@ -45,11 +47,11 @@ void inicializarJuego(Juego *juego, int num){
             }
         }
     }
-    juego->monedasRec = (int)contar_caracter((char*) juego->mapa, totalCeldas, MONEDA);
-    celdasLibres= contar_celdas_libres((char *) juego->mapa, totalCeldas);
+    juego->monedasTotal = (int)contar_caracter((char *)juego->mapa, totalCeldas, MONEDA);
+    celdasLibres = contar_celdas_libres((char *)juego->mapa, totalCeldas);
 
-    //resetea cotadores de nivel
-    juego->monedasRec= 0;
+    //resetea contadores de nivel
+    juego->monedasRec = 0;
     juego->pasos= 0;
     juego->tieneLlave= 0;
 
@@ -147,37 +149,38 @@ void mostrarMapa(Juego *juego){
     int of, oc, f, c;
     calcularVentana(juego, &of, &oc);
 
-    for (f= of; f<oc + FILASVIS; f++){
-        for (c= oc; c<oc + COLUMNASVIS; c++){
-            char celda= juego->mapa[f][c];
-            switch (celda){
-                case PARED:
-                printf(ANSI_COLOR_GREEN "%c", celda);
-                break;
-                case JUGADOR:
-                printf(ANSI_COLOR_BLUE "%c", celda);
-                break;
-                case MONEDA:
-                printf(ANSI_COLOR_YELLOW "%c", celda);
-                break;
-                case LLAVE:
-                printf(ANSI_COLOR_LIGHTBLUE "%c", celda);
-                break;
-                case PUERTA:
-                printf(ANSI_COLOR_CIAN "%c", celda);
-                break;
-                case ENEMIGO:
-                printf(ANSI_COLOR_RED "%c", celda);
-                break;
-                default: printf("%c", celda);
+    for (f = of; f < of + FILASVIS; f++){
+        for (c = oc; c < oc + COLUMNASVIS; c++){
+            const char *color = "";
+            char simbolo = juego->mapa[f][c];
+
+            if (f == juego->jugadorFila && c == juego->jugadorCol) {
+                simbolo = JUGADOR;
+                color = ANSI_COLOR_BLUE;
+            } else if (enemigoEnCelda(juego, f, c) >= 0) {
+                simbolo = ENEMIGO;
+                color = ANSI_COLOR_RED;
+            } else {
+                switch (juego->mapa[f][c]) {
+                    case PARED:
+                        color = ANSI_COLOR_GREEN;
+                        break;
+                    case MONEDA:
+                        color = ANSI_COLOR_YELLOW;
+                        break;
+                    case LLAVE:
+                        color = ANSI_COLOR_LIGHTBLUE;
+                        break;
+                    case PUERTA:
+                        color = ANSI_COLOR_CIAN;
+                        break;
+                    default:
+                        color = "";
+                        break;
+                }
             }
-            if(f== juego->jugadorFila && c == juego->jugadorCol){
-                putchar(JUGADOR);
-            } else if(enemigoEnCelda(juego, f, c) >= 0){
-                putchar(ENEMIGO);
-            } else{
-                putchar(juego->mapa[f][c]);
-            }
+
+            printf("%s%c%s", color, simbolo, ANSI_RESET);
         }
         putchar('\n');
     }
@@ -196,13 +199,13 @@ static int enemigoEnCelda(Juego *juego, int fila, int col){
 
 void mostrarInstrucciones(Juego *juego){
     printf ("---------------------------------------------------------\n");
-    printf ("Nivel: %d  |  Llave %s  |  Monedas: %d/%d  |  Pasos: %d\n", juego->nivelActual, juego->tieneLlave ? "Si" : "No", juego->monedasRec, juego->monedasTotal, juego->pasos);
+    printf ("Nivel: %d  |  Llave: %s  |  Monedas: %d/%d  |  Pasos: %d\n", juego->nivelActual, juego->tieneLlave ? "Si" : "No", juego->monedasRec, juego->monedasTotal, juego->pasos);
     printf ("----------------------------------------------------------\n");
     printf ("W= arriba  S= abajo  A= izquierda  D= derecha  Q= salir\n");
 
 }
 
-char leerTecla(){
+char leerLetra(){
     return (char)_getch();
 }
 
@@ -214,8 +217,8 @@ void moverJugador(Juego *juego, char tecla){
     switch (tecla){
         case 'w': case 'W': nf--; break;
         case 's': case 'S': nf++; break;
-        case 'a': case 'A': nf--; break;
-        case 'd': case 'D': nf++; break;
+        case 'a': case 'A': nc--; break;
+        case 'd': case 'D': nc++; break;
         default: return;
     }
 
@@ -249,8 +252,8 @@ static void moverUnEnemigo(Juego *juego, int idx) {
     Enemigo *en = &juego->enemigos[idx];
     int df = juego->jugadorFila - juego->enemigos[idx].fila;  //diferencia de filas
     int dc = juego->jugadorCol - juego->enemigos[idx].col;      //diferencia de columnas
-    int nf = en->fila, nc = en->col;        //posicion tentativa de movimiento
-    int nc = en->col;                       //posicion tentativa de movimiento
+    int nf = en->fila;        //posicion tentativa de movimiento en filas
+    int nc = en->col;         //posicion tentativa de movimiento en columnas
     int nf2, nc2;
     char celda;
  
