@@ -1,7 +1,7 @@
 section .text
 
 ;exporta los simbolos para que puedan ser usados en otros archivos
-global contar_carcter
+global contar_caracter
 global validar_movimiento
 global calcular_puntaje
 global detectar_objeto
@@ -169,7 +169,7 @@ contar_celdas_libres:
 %ifdef WIN64
     mov rdi, rcx        ;mapa
     mov rsi, rdx        ;total
-%endif|
+%endif
 
     xor rax, rax        ;contador = 0
     xor rcx, rcx        ;indice = 0
@@ -190,7 +190,5 @@ contar_celdas_libres:
 .fin_libres:
     pop rbp
     ret
-
-section.note.GNU-stack noalloc noexec nowrite progbits      //indica que esta seccion no necesita permisos de ejecucion ni escritura
 
 
