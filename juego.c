@@ -236,8 +236,13 @@ void moverJugador(Juego *juego, char tecla){
         juego->mapa[nf][nc]= CAMINOLIBRE;    //se abre la puerta
     }
 
-    //recoger moneda
+    //recoger moneda o llave
     if (detectar_objeto((char *)juego->mapa, COLUMNAS, nf, nc, MONEDA)){
+        juego->monedasRec++;
+        juego->mapa[nf][nc]= CAMINOLIBRE;
+    }
+
+    if (detectar_objeto((char *)juego->mapa, COLUMNAS, nf, nc, LLAVE)){
         juego->tieneLlave= 1;
         juego->mapa[nf][nc]= CAMINOLIBRE;
     }
@@ -336,6 +341,7 @@ int nivelTerminado(Juego *juego){
 }
 
 void mostrarResumen(Juego *juego){
+    printf("\n");
     printf("---------------------------------------------------------\n");
     printf("Nivel: %d  |  Llave %s  |  Monedas: %d/%d  |  Pasos: %d\n", juego->nivelActual, juego->tieneLlave ? "Si" : "No", juego->monedasRec, juego->monedasTotal, juego->pasos);
     printf("---------------------------------------------------------\n");
